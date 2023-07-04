@@ -1,10 +1,12 @@
 const frisby = require("frisby");
-const url = 'https://www.google.com/maps'
+const Joi = frisby.Joi;
+
 const Payload = {username:'Lee', password:'1569', email: 'hypernova@stars.com'}
-const workspaceId = 'db4af806-b352-4ef9-a040-36bc7f4b44c1'
-const API_KEY ='PMAK-649734e3de9a020043eb672a-46a9778ac6b268950d479b505fe885aa28'
-const Webhook = {"name": "{webhookName}", "collection": "{collectionUid}"
-}
+const workspaceId = '6b405185-0304-40ff-9987-45170a3f1cd5'
+const API_KEY ='PMAK-6496e39f35af230031972da5-4c08447d913b9bbbaea7a16529dc2473ec'
+let webhookName = 'echo webhook'
+let collectionUid = '17268601-544eb9a5-18b0-4d7a-a1fe-e6a386cb2ddf'
+
 
 frisby.globalSetup({
     request: {
@@ -13,6 +15,14 @@ frisby.globalSetup({
 });
 
 describe("Day29", () => {
+    frisby.globalSetup({
+        request: {
+            headers: {
+                'x-api-key': API_KEY
+            }
+        }
+    })
+
     it('echo', function () {
         return frisby
             .post(`https://postman-echo.com/post`, Payload)
@@ -23,20 +33,38 @@ describe("Day29", () => {
                     " password: '1569'," +
                     " email: 'hypernova@stars.com' }"
             })
+            .then((result) => console.log(result))
+    })
+
+
+describe("Day29.1", () => {
+    frisby.globalSetup({
+        request: {
+            headers: {
+                'x-api-key': API_KEY
+            }
+        }
     })
 
     it('Create Webhook', function () {
         return frisby
-            .post(`https://api.getpostman.com/webhooks?workspace=${workspaceId}`,Webhook, {
-                method: "get",
-                headers: {"x-api-key": API_KEY}
+            .post(`https://api.getpostman.com/webhooks?workspace=${workspaceId}`, {
+                "webhook": {
+                    "name": webhookName,
+                    "collection": collectionUid
+                }
             })
-            .expect("status", 401)
-    })
+            .expect('status', 200)
+            // .expect('jsonTypes', 'webhook.webhookUrl', Joi.string().required())
+        });
 
-    it('Trigger Webhook\n', function () {
-        return frisby
-            .post(`https://newman-api.getpostman.com/run`)
-            .expect("status", 404)
+        it('Trigger Webhook\n', function () {
+            return frisby
+                .post(`https://newman-api.getpostman.com/run`)
+                .expect("status", 404)
+        })
     })
-    });
+});
+
+
+
